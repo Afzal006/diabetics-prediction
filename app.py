@@ -20,7 +20,7 @@ st.set_page_config(
 
 @st.cache_resource
 def load_model():
-    return joblib.load("model/diabetes_model.pkl")
+    return joblib.load("diabetes_model.pkl")
 
 
 model = load_model()
@@ -33,22 +33,21 @@ model = load_model()
 st.title("🩺 Diabetes Prediction System")
 
 st.write(
-    "Enter the patient's information below to generate "
+    "Enter the patient information below to generate "
     "a machine-learning prediction."
 )
 
 st.info(
-    "This application is for educational/project purposes "
+    "This application is for educational and project purposes "
     "and is not a medical diagnosis."
 )
 
 
 # ==================================================
-# INPUT SECTION
+# PATIENT INFORMATION
 # ==================================================
 
 st.subheader("Patient Information")
-
 
 col1, col2 = st.columns(2)
 
@@ -141,6 +140,7 @@ predict_button = st.button(
 
 if predict_button:
 
+    # Create input DataFrame
     input_data = pd.DataFrame({
         "Pregnancies": [pregnancies],
         "Glucose": [glucose],
@@ -152,8 +152,10 @@ if predict_button:
         "Age": [age]
     })
 
-    # Convert zero values to missing values
-    # for the same columns used during training
+
+    # ==================================================
+    # HANDLE INVALID ZERO VALUES
+    # ==================================================
 
     columns_with_invalid_zero = [
         "Glucose",
@@ -168,10 +170,13 @@ if predict_button:
         .replace(0, float("nan"))
     )
 
-    # Prediction
+
+    # ==================================================
+    # MAKE PREDICTION
+    # ==================================================
+
     prediction = model.predict(input_data)[0]
 
-    # Probability
     probability = model.predict_proba(input_data)[0][1]
 
     probability_percentage = probability * 100
@@ -183,18 +188,23 @@ if predict_button:
 
     st.subheader("Prediction Result")
 
+
     if prediction == 1:
 
         st.error(
-            "⚠️ Prediction: Diabetes detected"
+            "⚠️ Model Prediction: Diabetes detected"
         )
 
     else:
 
         st.success(
-            "✅ Prediction: No diabetes detected"
+            "✅ Model Prediction: No diabetes detected"
         )
 
+
+    # ==================================================
+    # PROBABILITY
+    # ==================================================
 
     st.metric(
         "Predicted Probability",
@@ -210,6 +220,10 @@ if predict_button:
         int(probability_percentage)
     )
 
+
+    # ==================================================
+    # INTERPRETATION
+    # ==================================================
 
     if probability < 0.30:
 
@@ -241,4 +255,9 @@ st.divider()
 
 st.caption(
     "Diabetes Prediction System | Machine Learning Project"
+)
+
+st.caption(
+    "For educational purposes only. This prediction should "
+    "not be used as a medical diagnosis."
 )
